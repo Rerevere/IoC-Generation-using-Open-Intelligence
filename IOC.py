@@ -4,6 +4,7 @@ import requests
 import uuid
 import xml.etree.cElementTree as ET
 import requests
+from pprint import pprint
 
 parser = argparse.ArgumentParser()
 parser.add_argument("prov_hash", help="Enter the hash to retrieve details from Virustotal")
@@ -20,7 +21,7 @@ response = requests.get('https://www.virustotal.com/vtapi/v2/file/report',
   params=params, headers=headers)
 json_response = response.json()
 #Prints Json Response from VirusTotal
-#print(json_response) 
+pprint(json_response) 
 
 #Retrieve values used in IOC from Json
 md5 = json_response['md5']
@@ -40,7 +41,13 @@ url = "https://www.hybrid-analysis.com/api/scan/" + str(prov_hash)
 params_Hybrid = {"apikey":KEY_Hybrid,"secret":SECRET_Hybrid,"type":"json"}
 response_Hybrid = requests.get(url, params=params_Hybrid, headers=headers_Hybrid)
 json_Hybrid = response_Hybrid.json()
-print(json_Hybrid) #Prints Json Response from Hybrid Analysis
+pprint(json_Hybrid) #Prints Json Response from Hybrid Analysis
+
+size = (response['response'][0]['size']) #File Size 
+domains = (response['response'][0]['domains']) #Domains
+compro_hosts = (response['response'][0]['compromised_hosts']) #Compromised IP's (Hosts)
+hosts = (response['response'][0]['hosts']) #IP Addresses
+file_name = (response['response'][0]['submitname']) #File Name
 
 def indent(elem, level=0):
   i = "\n" + level*"  "
