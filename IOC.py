@@ -19,7 +19,8 @@ headers = {
 response = requests.get('https://www.virustotal.com/vtapi/v2/file/report',
   params=params, headers=headers)
 json_response = response.json()
-print(json_response) #Prints Json Response from VirusTotal
+#Prints Json Response from VirusTotal
+#print(json_response) 
 
 #Retrieve values used in IOC from Json
 md5 = json_response['md5']
@@ -59,8 +60,8 @@ def indent(elem, level=0):
 def buildTree():
 	from datetime import datetime
 	time = datetime.now().replace(microsecond=0).isoformat()
-	short_desc = input("What is the name of the IOC? ")
-	desc = input("What is the description of the IOC? ")
+	short_desc = input("What is the name of the IoC? ")
+	desc = input("What is the description of the IoC? ")
 	author = input("Who is the author of the IoC? ")
 	
 	ioc = ET.Element("ioc")
@@ -77,7 +78,7 @@ def buildTree():
 	ET.SubElement(ioc, "authored_date").text = time
 	ET.SubElement(ioc, "links")
 	definition = ET.SubElement(ioc, "definition")
-	#Md5sum	
+	#md5sum	
 	indicator = ET.SubElement(definition, "Indicator")
 	indicator.set("operator", "OR")
 	indicator.set("id", str(uuid.uuid4()))
