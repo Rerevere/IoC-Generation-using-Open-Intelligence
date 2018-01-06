@@ -43,11 +43,18 @@ response_Hybrid = requests.get(url, params=params_Hybrid, headers=headers_Hybrid
 json_Hybrid = response_Hybrid.json()
 pprint(json_Hybrid) #Prints Json Response from Hybrid Analysis
 
-size = (response['response'][0]['size']) #File Size 
-domains = (response['response'][0]['domains']) #Domains
-compro_hosts = (response['response'][0]['compromised_hosts']) #Compromised IP's (Hosts)
-hosts = (response['response'][0]['hosts']) #IP Addresses
-file_name = (response['response'][0]['submitname']) #File Name
+try:
+	file_size = (json_Hybrid['response'][0]['size']) #File Size 
+	domains = (json_Hybrid['response'][0]['domains']) #Domains
+	compro_hosts = (json_Hybrid['response'][0]['compromised_hosts']) #Compromised IP's (Hosts)
+	file_name = (json_Hybrid['response'][0]['submitname']) #File Name
+except: 
+	pass
+	print("Sorry there wasn't a corresponding hash found on Hybrid Analysis")
+	file_name = None
+	domains = None
+	compro_hosts = None
+	file_size = None
 
 def indent(elem, level=0):
   i = "\n" + level*"  "
@@ -85,7 +92,8 @@ def buildTree():
 	ET.SubElement(ioc, "authored_date").text = time
 	ET.SubElement(ioc, "links")
 	definition = ET.SubElement(ioc, "definition")
-	#md5sum	
+	
+#md5sum	
 	indicator = ET.SubElement(definition, "Indicator")
 	indicator.set("operator", "OR")
 	indicator.set("id", str(uuid.uuid4()))
@@ -102,7 +110,41 @@ def buildTree():
 	content = ET.SubElement(indicatorItem, "Content")
 	content.text = md5
 	content.set("type", "md5")
-	#sha1
+	#File Name
+	indicatorFN = ET.SubElement(indicator, "Indicator")
+	indicatorFN.set("operator", "AND")
+	indicatorFN.set("id", str(uuid.uuid4()))
+
+	indicatorItemFN = ET.SubElement(indicatorFN, "IndicatorItem")
+	indicatorItemFN.set("id", str(uuid.uuid4()))
+	indicatorItemFN.set("condition", "contains")
+	
+	contextFN = ET.SubElement(indicatorItemFN, "Context")
+	contextFN.set("document", "FileItem")
+	contextFN.set("search", "FileItem/FileName")
+	contextFN.set("type", "mir")
+	
+	contentFN = ET.SubElement(indicatorItemFN, "Content")
+	contentFN.text = file_name
+	contentFN.set("type", "string")
+		#File Size
+	indicatorFS = ET.SubElement(indicatorFN, "Indicator")
+	indicatorFS.set("operator", "OR")
+	indicatorFS.set("id", str(uuid.uuid4()))
+
+	indicatorItemFS = ET.SubElement(indicatorFS, "IndicatorItem")
+	indicatorItemFS.set("id", str(uuid.uuid4()))
+	indicatorItemFS.set("condition", "is")
+	
+	contextFS = ET.SubElement(indicatorItemFS, "Context")
+	contextFS.set("document", "FileItem")
+	contextFS.set("search", "FileItem/SizeInBytes")
+	contextFS.set("type", "mir")
+	
+	contentFS = ET.SubElement(indicatorItemFS, "Content")
+	contentFS.text = str(file_size)
+	contentFS.set("type", "int")
+#sha1
 	indicator1 = ET.SubElement(definition, "Indicator")
 	indicator1.set("operator", "OR")
 	indicator1.set("id", str(uuid.uuid4()))
@@ -119,7 +161,7 @@ def buildTree():
 	content1 = ET.SubElement(indicatorItem1, "Content")
 	content1.text = sha1
 	content1.set("type", "sha1")
-	#sha256
+#sha256
 	indicator2 = ET.SubElement(definition, "Indicator")
 	indicator2.set("operator", "OR")
 	indicator2.set("id", str(uuid.uuid4()))
@@ -136,9 +178,10 @@ def buildTree():
 	content2 = ET.SubElement(indicatorItem2, "Content")
 	content2.text = sha256
 	content2.set("type", "sha256")
-
+	
 	tree = ET.ElementTree(ioc)
-	tree.write("AutoGen.ioc", xml_declaration=True, encoding="us-ascii")
+	output_name = "AutoGen-" + time + ".ioc"
+	tree.write(output_name, xml_declaration=True, encoding="us-ascii")
 
 if __name__ == "__main__":
   buildTree()
