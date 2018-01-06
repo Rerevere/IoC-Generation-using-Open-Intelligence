@@ -1,8 +1,9 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 import argparse
 import requests
 import uuid
 import xml.etree.cElementTree as ET
+import requests
 
 parser = argparse.ArgumentParser()
 parser.add_argument("prov_hash", help="Enter the hash to retrieve details from Virustotal")
@@ -13,17 +14,32 @@ params = {'apikey': '345b1725730d11661043a070b763b89e5f5c4340e3d72cae2bc210bfac3
 
 headers = {
   "Accept-Encoding": "gzip, deflate",
-  "User-Agent" : "gzip,  My Python requests library example client or username"
+  "User-Agent" : "gzip,  VirusTotal"
   }
 response = requests.get('https://www.virustotal.com/vtapi/v2/file/report',
   params=params, headers=headers)
 json_response = response.json()
-#print(json_response)
+print(json_response) #Prints Json Response from VirusTotal
 
 #Retrieve values used in IOC from Json
 md5 = json_response['md5']
 sha1 = json_response['sha1']
 sha256 = json_response['sha256']
+
+#Hybrid Analysis
+KEY_Hybrid = 'duhb3r6b02gcg8wg8kcwwwswc'
+SECRET_Hybrid = 'f7c072deec549790e52a7dc058fc7830fc99688b4a0d5575'
+
+headers_Hybrid = {
+  "Accept-Encoding": "gzip, deflate",
+  "User-Agent" : "gzip,  Falcon"
+  }
+
+url = "https://www.hybrid-analysis.com/api/scan/" + str(prov_hash)
+params_Hybrid = {"apikey":KEY_Hybrid,"secret":SECRET_Hybrid,"type":"json"}
+response_Hybrid = requests.get(url, params=params_Hybrid, headers=headers_Hybrid)
+json_Hybrid = response_Hybrid.json()
+print(json_Hybrid) #Prints Json Response from Hybrid Analysis
 
 def indent(elem, level=0):
   i = "\n" + level*"  "
@@ -43,8 +59,9 @@ def indent(elem, level=0):
 def buildTree():
 	from datetime import datetime
 	time = datetime.now().replace(microsecond=0).isoformat()
-	short_desc = raw_input("What is the name of the IOC? ")
-	desc = raw_input("What is the description of the IOC? ")
+	short_desc = input("What is the name of the IOC? ")
+	desc = input("What is the description of the IOC? ")
+	author = input("Who is the author of the IoC? ")
 	
 	ioc = ET.Element("ioc")
 	ioc.set("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance")
@@ -56,7 +73,7 @@ def buildTree():
 	ET.SubElement(ioc, "short_description").text = short_desc
 	ET.SubElement(ioc, "description").text = desc
 	ET.SubElement(ioc, "keywords")
-	ET.SubElement(ioc, "authored_by").text = "JJ, Mike, & Alfred"
+	ET.SubElement(ioc, "authored_by").text = author
 	ET.SubElement(ioc, "authored_date").text = time
 	ET.SubElement(ioc, "links")
 	definition = ET.SubElement(ioc, "definition")
