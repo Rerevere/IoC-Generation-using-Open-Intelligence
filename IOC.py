@@ -11,7 +11,7 @@ parser.add_argument("prov_hash", help="Enter the hash to retrieve details from V
 args = parser.parse_args()
 prov_hash = args.prov_hash
 
-params = {'apikey': '345b1725730d11661043a070b763b89e5f5c4340e3d72cae2bc210bfac3edc0f', 'resource': prov_hash}
+params = {'apikey': '345b1725730d11661043a070b763b89e5f5c4340e3d72cae2bc210bfac3edc0f', 'resource': prov_hash} #Cite https://www.virustotal.com/en/documentation/public-api/
 
 headers = {
   "Accept-Encoding": "gzip, deflate",
@@ -45,8 +45,8 @@ pprint(json_Hybrid) #Prints Json Response from Hybrid Analysis
 
 try:
 	file_size = (json_Hybrid['response'][0]['size']) #File Size 
-	domains = (json_Hybrid['response'][0]['domains']) #Domains
-	compro_hosts = (json_Hybrid['response'][0]['compromised_hosts']) #Compromised IP's (Hosts)
+	domains = (json_Hybrid['response'][0]['domains'][0]) #Domains
+	compro_hosts = (json_Hybrid['response'][0]['compromised_hosts'][0]) #Compromised IP's (Hosts)
 	file_name = (json_Hybrid['response'][0]['submitname']) #File Name
 except: 
 	pass
@@ -56,7 +56,7 @@ except:
 	compro_hosts = None
 	file_size = None
 
-def indent(elem, level=0):
+def indent(elem, level=0): #Cite http://effbot.org/zone/element-lib.htm
   i = "\n" + level*"  "
   if len(elem):
     if not elem.text or not elem.text.strip():
@@ -110,6 +110,40 @@ def buildTree():
 	content = ET.SubElement(indicatorItem, "Content")
 	content.text = md5
 	content.set("type", "md5")
+	#Network DNS
+	indicatorDNS = ET.SubElement(indicator, "Indicator")
+	indicatorDNS.set("operator", "OR")
+	indicatorDNS.set("id", str(uuid.uuid4()))
+
+	indicatorItemDNS = ET.SubElement(indicatorDNS, "IndicatorItem")
+	indicatorItemDNS.set("id", str(uuid.uuid4()))
+	indicatorItemDNS.set("condition", "contains")
+	
+	contextDNS = ET.SubElement(indicatorItemDNS, "Context")
+	contextDNS.set("document", "Network")
+	contextDNS.set("search", "Network/DNS")
+	contextDNS.set("type", "mir")
+	
+	contentDNS = ET.SubElement(indicatorItemDNS, "Content")
+	contentDNS.text = str(domains)
+	contentDNS.set("type", "string")
+		#Port Remote IP
+	indicatorIP = ET.SubElement(indicatorDNS, "Indicator")
+	indicatorIP.set("operator", "OR")
+	indicatorIP.set("id", str(uuid.uuid4()))
+
+	indicatorItemIP = ET.SubElement(indicatorIP, "IndicatorItem")
+	indicatorItemIP.set("id", str(uuid.uuid4()))
+	indicatorItemIP.set("condition", "is")
+	
+	contextIP = ET.SubElement(indicatorItemIP, "Context")
+	contextIP.set("document", "PortItem")
+	contextIP.set("search", "PortItem/remoteIP")
+	contextIP.set("type", "mir")
+	
+	contentIP = ET.SubElement(indicatorItemIP, "Content")
+	contentIP.text = str(compro_hosts)
+	contentIP.set("type", "IP")
 	#File Name
 	indicatorFN = ET.SubElement(indicator, "Indicator")
 	indicatorFN.set("operator", "AND")
