@@ -9,14 +9,20 @@ The tool pulls reports from both Virustotal and Hybrid-Analysis based on a sha25
 Generation of the IOC will ask for its: name, description, and author.
 
 In order to use the tool, three fields must be changed: 
+
 Virustotal
+
 params = {'apikey': '###################################################', 'resource': prov_hash}
+
 Hybrid-Analysis
+
 KEY_Hybrid = '##################################'
 SECRET_Hybrid = '################################################'
 
 These should be changed to your own public/private api key for use.
 
 Other requirements can be found on the Virustotal and Hybrid-Analysis pages respectively.
+
 https://www.virustotal.com/en/documentation/public-api/
+
 https://www.hybrid-analysis.com/apikeys/info
